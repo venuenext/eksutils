@@ -1,7 +1,4 @@
-ARG FROM_IMAGE=amazonlinux
-ARG FROM_TAG=2.0.20200207.1
-FROM ${FROM_IMAGE}:${FROM_TAG}
-MAINTAINER massimo@it20.info
+FROM amazonlinux:latest
 
 ################ UTILITIES VERSIONS ########################
 ARG KUBE_RELEASE_VER=v1.17.3
@@ -20,11 +17,15 @@ ARG KUBECTX_VER=0.9.0
 ARG KUBENS_VER=0.9.0
 ARG BAT_VER=0.15.4
 ARG VSCODESERVER_VER=3.3.1
+ARG TELEPORT_VERSION=5.1.2
+ARG VAULT_VERSION=1.6.2
+ARG OP_VERSION=1.8.0
+
 
 ################## SETUP ENV ###############################
 ### OCTANT
 # browser autostart at octant launch is disabled
-# ip address and port are modified (to better work with Cloud9)  
+# ip address and port are modified (to better work with Cloud9)
 ENV OCTANT_DISABLE_OPEN_BROWSER=1
 ENV OCTANT_LISTENER_ADDR="0.0.0.0:8080"
 ### NODE
@@ -37,7 +38,7 @@ ENV PATH=/usr/local/bin/code-server/bin:$PATH
 ################## BEGIN INSTALLATION ######################
 
 ## This adds the script that checks the version of the tools and utilities installed
-ADD utilsversions.sh . 
+ADD utilsversions.sh .
 
 ## This will remove intermediate downloads between RUN steps as /tmp is out of the container FS
 VOLUME /tmp
@@ -63,6 +64,7 @@ RUN yum update -y \
             openssl11 \
             python3 \
             tar \
+            bzip2 \
             unzip \
             vi \
             wget \
@@ -94,10 +96,6 @@ RUN mkdir -p ${NVM_DIR} \
 # setup Typescript (latest at time of docker build)
 RUN npm install -g typescript
 
-# setup pip (latest at time of docker build)
-RUN curl -s https://bootstrap.pypa.io/get-pip.py -o get-pip.py \ 
-   && python get-pip.py
- 
 ########################################
 ### end setup runtime pre-requisites ###
 ########################################
@@ -114,9 +112,6 @@ RUN curl -Ls "https://${AWSCLI_URL_BASE}/${AWSCLI_URL_FILE}" -o "awscliv2.zip" \
  && unzip awscliv2.zip \
  && ./aws/install \
  && /usr/local/bin/aws --version
-
- # setup the eb cli (latest at time of docker build)
-RUN pip install awsebcli --upgrade 
 
 # setup the aws cdk cli (latest at time of docker build)
 RUN npm i -g aws-cdk
@@ -143,8 +138,8 @@ RUN curl -sLo get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scr
 RUN curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp \
     && mv -v /tmp/eksctl /usr/local/bin
 
-# setup the eksuser tool 
-RUN curl -sLo eksuser-linux-amd64.zip https://github.com/prabhatsharma/eksuser/releases/download/v${EKSUSER_VER}/eksuser-linux-amd64.zip \ 
+# setup the eksuser tool
+RUN curl -sLo eksuser-linux-amd64.zip https://github.com/prabhatsharma/eksuser/releases/download/v${EKSUSER_VER}/eksuser-linux-amd64.zip \
     && unzip eksuser-linux-amd64.zip \
     && chmod +x ./binaries/linux/eksuser \
     && mv ./binaries/linux/eksuser /usr/local/bin/eksuser
@@ -166,31 +161,31 @@ RUN curl -sLo kubens.tar.gz https://github.com/ahmetb/kubectx/releases/download/
     && chmod +x kubens \
     && mv kubens /usr/local/bin/kubens
 
-# setup ksonnet 
+# setup ksonnet
 RUN curl -sLo - https://github.com/ksonnet/ksonnet/releases/download/v${KSONNET_VER}/ks_${KSONNET_VER}_linux_amd64.tar.gz |tar xfz - --strip-components=1 \
    && mv ks /usr/bin/ks
 
-# setup k9s 
+# setup k9s
 RUN curl -sLo - https://github.com/derailed/k9s/releases/download/${K9S_VER}/k9s_${K9S_VER}_Linux_x86_64.tar.gz |tar xfz - \
-    && mv k9s /usr/local/bin/k9s 
+    && mv k9s /usr/local/bin/k9s
 
 # setup docker
 RUN amazon-linux-extras install docker -y
 
-# setup docker-compose 
+# setup docker-compose
 RUN curl -sL "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VER}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
-    && chmod +x /usr/local/bin/docker-compose 
+    && chmod +x /usr/local/bin/docker-compose
 
-# setup kind 
+# setup kind
 RUN curl -Lo ./kind https://kind.sigs.k8s.io/dl/v${KIND_VER}/kind-linux-amd64 \
     && chmod +x ./kind \
     && mv ./kind /usr/local/bin/kind
 
 # setup Octant
 RUN curl -sLo - https://github.com/vmware-tanzu/octant/releases/download/v${OCTANT_VER}/octant_${OCTANT_VER}_Linux-64bit.tar.gz |tar xfz - --strip-components=1 \
- && mv octant /usr/local/bin/octant 
+ && mv octant /usr/local/bin/octant
 
-# setup glooctl 
+# setup glooctl
 RUN curl -sL https://run.solo.io/gloo/install | sh \
  && mv $HOME/.gloo/bin/glooctl /usr/local/bin \
  && rm -r $HOME/.gloo
@@ -201,7 +196,26 @@ RUN curl -sSL https://github.com/sharkdp/bat/releases/download/v${BAT_VER}/bat-v
 
 # setup VS Code server
 RUN curl -sSL https://github.com/cdr/code-server/releases/download/v${VSCODESERVER_VER}/code-server-${VSCODESERVER_VER}-linux-amd64.tar.gz | tar xfz - \
- && mv code-server-${VSCODESERVER_VER}-linux-amd64 /usr/local/bin/code-server 
+ && mv code-server-${VSCODESERVER_VER}-linux-amd64 /usr/local/bin/code-server
+
+ # Install teleport
+ RUN curl -O https://get.gravitational.com/teleport-v${TELEPORT_VERSION}-linux-amd64-bin.tar.gz && tar xfvz teleport-v${TELEPORT_VERSION}-linux-amd64-bin.tar.gz && ./teleport/install
+ RUN rm -rf ./teleport*
+
+# Install VN ClI
+RUN curl -O https://vn-build.s3-us-west-2.amazonaws.com/cli/venuenext-cli/latest/vn_linux64.tar.bz2 && tar xfvj /tmp/vn_linux64.tar.bz2 && mv /tmp/vn /usr/local/bin/vn && chmod +x /usr/local/bin/vn
+
+# Install vault
+RUN curl -sLO https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip && unzip vault_${VAULT_VERSION}_linux_amd64.zip -d /usr/local/bin
+RUN chmod 755 /usr/local/bin/vault
+
+# Install op
+RUN curl -sLO https://cache.agilebits.com/dist/1P/op/pkg/v${OP_VERSION}/op_linux_amd64_v${OP_VERSION}.zip && unzip op_linux_amd64_v${OP_VERSION}.zip && mv op /usr/local/bin/op
+RUN chmod +x /usr/local/bin/op
+RUN rm -rf op_linux_amd64_v${OP_VERSION}.zip
+
+# Bash RC
+COPY ./.bashrc /root/.bashrc
 
 #########################
 ## end setup utilities ##
@@ -214,8 +228,6 @@ WORKDIR /
 ############################################################
 ########### Tools and Utilities versions checks ############
 ############################################################
-
 RUN /utilsversions.sh
 
-CMD /bin/sh
-
+CMD /bin/bash

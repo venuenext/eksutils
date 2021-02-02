@@ -44,10 +44,10 @@ yum version
 errorcheck yum
 logger "green" "checking git..."
 git version
-errorcheck git 
+errorcheck git
 logger "green" "checking yarn..."
 yarn --version
-errorcheck yarn 
+errorcheck yarn
 logger "green" "checking sudo..."
 sudo -V # | head -n 1
 errorcheck sudo
@@ -88,10 +88,7 @@ logger "green" "checking figlet..."
 figlet -v # | head -n 1
 errorcheck figlet
 
-# add-ons tools (pre-requisites for the actual utilities) 
-logger "green" "checking pip..."
-pip --version
-errorcheck pip
+# add-ons tools (pre-requisites for the actual utilities)
 logger "green" "checking node..."
 node --version
 errorcheck node
@@ -100,35 +97,32 @@ errorcheck node
 logger "green" "checking aws..."
 aws --version
 errorcheck aws
-logger "green" "checking eb..."
-eb --version
-errorcheck eb
 logger "green" "checking cdk..."
 cdk --version
-errorcheck cdk8s 
+errorcheck cdk8s
 logger "green" "checking cdk8s..."
 cdk8s --version
-errorcheck cdk 
+errorcheck cdk
 logger "green" "checking kubectl..."
-kubectl version --client=true 
-errorcheck kubectl 
+kubectl version --client=true
+errorcheck kubectl
 logger "green" "checking aws-iam-authenticator..."
 aws-iam-authenticator version
 errorcheck aws-iam-authenticator
 logger "green" "checking helm..."
-helm version -c 
-errorcheck helm 
+helm version -c
+errorcheck helm
 logger "green" "checking eksctl..."
-eksctl version 
-errorcheck eksctl 
+eksctl version
+errorcheck eksctl
 logger "green" "checking eksuser..."
-eksuser version 
+eksuser version
 errorcheck eksuser
 logger "green" "checking kubecfg..."
-kubecfg version 
+kubecfg version
 errorcheck kubecfg
 logger "green" "checking ks..."
-ks version 
+ks version
 errorcheck ks
 logger "green" "checking k9s..."
 k9s version
@@ -143,10 +137,10 @@ logger "green" "checking kind..."
 kind --version
 errorcheck kind
 logger "green" "checking octant..."
-octant version 
-errorcheck octant 
+octant version
+errorcheck octant
 logger "green" "checking glooctl..."
-glooctl version 
+glooctl version
 errorcheck glooctl
 logger "green" "checking kubectx..."
 kubectx -h
