@@ -1,0 +1,24 @@
+dist: focal
+group: stable
+cache:
+  directories:
+  - "$HOME/docker"
+branches:
+  only:
+  - "/^v\\d+\\.\\d+(\\.\\d+)?(-\\S*)?$/"
+services:
+- docker
+addons:
+  snaps:
+  - name: yq
+jobs:
+  include:
+  - stage: Build
+    script:
+    - travis_wait 30 sleep 1800 &
+    - bash .vnops/k8s/build.sh
+    name: Build Docker Image
+    if: tag =~ /^v*/
+env:
+  global:
+    secure: g4tThqAiKrwWIb2yBKc64eDwCU3SbmV8BMANutQqdSSPSL3MNx+UdoXZ79SPB97WgJYaR5GvAyHUcefoDgSkDJikdOBY5UgQPgEQx/aAOQhPgsA7odET5+jMxtG2eGNAstVtTjTV1naA7kiPfziPEM0bPcQeWyoc2VLfQOPRbnm8801nZ1lbkHIdWCSmdnNCdReShkZKqryEfsSJWmRqm3CYXxiWqM95Fa1XnrwR8MujiV9xRBhQvrEosLax9lJoANR4YjS4j5m/cEJ9RlV4f0xnnYGgRQpO0uY/yG7o9hmFtyJkTadNLsfuCcG4Lm1LpVzbWa4y/s+Fj5w+w0TBfV4OB9MBYCKV7Eg5LTYG5n3Js50hhqShL2+6u8Fw8UH/5gGIakkQUNBG1lgbRw4ZLVcdKr1SOyZznyqSEWQHAPISKDlRKNMICQxGNCho9s7OWl3LF40A1DrBF85p4jmcPLJ3ly5pYToStcN2MP3mu0MPpl+u6BPfCH694t4LMS+02ehtsm9GAAbLHj+GCctYG5/Gx1M0APZ/t6sZhkfFMpuVNBtGSkWk6AWVu/03XfxwnR5y5h57/W5CDEIEGW6WmwhUun+ny6PoJLpFneOdAyZ1wN8n7cYojKQSPmBmweF4Jo4upKeFJQt3QUy3xHE6NRHgog2U7x7PMC1ByGLu8Nk=
