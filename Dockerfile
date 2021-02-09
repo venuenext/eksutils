@@ -230,4 +230,4 @@ WORKDIR /
 ############################################################
 RUN /utilsversions.sh
 
-CMD /bin/bash
+CMD tail -f /dev/null
