@@ -1,7 +1,7 @@
 FROM amazonlinux:latest
 
 ################ UTILITIES VERSIONS ########################
-ARG KUBE_RELEASE_VER=v1.17.3
+ARG KUBE_RELEASE_VER=v1.20.0
 ARG NODE_VERSION=12.16.2
 ARG IAM_AUTH_VER=0.4.0
 ARG EKSUSER_VER=0.1.1
@@ -216,6 +216,7 @@ RUN rm -rf op_linux_amd64_v${OP_VERSION}.zip
 
 # Bash RC
 COPY ./.bashrc /root/.bashrc
+RUN mkdir /root/.kube
 
 #########################
 ## end setup utilities ##

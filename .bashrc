@@ -1,5 +1,6 @@
+#!/usr/bin/bash
 aws sts get-caller-identity | jq -r '.Arn'
-if  [[ ! -z "${EKS}" ]]; then
+if [[ ! -z "${EKS}" ]]; then
   aws eks --region ${AWS_REGION} update-kubeconfig --name ${ECOSYSTEM}-${ENVTYPE}-eks-cluster
 else
   kubectl config set-context ${ECOSYSTEM}
